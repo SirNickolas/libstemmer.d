@@ -1,0 +1,19 @@
+name        "libstemmer"
+description "Binding to `libstemmer` C library — Snowball stemming algorithms."
+authors     "Nickolay Bukreyev"
+copyright   "Copyright © 2025, Nickolay Bukreyev"
+license     "BSD-3-Clause"
+
+subPackage "./c"
+
+dependency ":c" path="."
+
+targetPath "build"
+
+configuration "library"
+
+configuration "unittest" {
+    sourcePaths "test"
+    importPaths "test"
+    dflags "-dip1000" "-preview=in" "-preview=fixImmutableConv"
+}
