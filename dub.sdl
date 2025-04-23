@@ -1,5 +1,5 @@
-name        "libstemmer"
-description "Binding to `libstemmer` C library — Snowball stemming algorithms."
+name        "libstemmer-d"
+description "Bindings to libstemmer — Snowball stemming algorithms."
 authors     "Nickolay Bukreyev"
 copyright   "Copyright © 2025, Nickolay Bukreyev"
 license     "BSD-3-Clause"
@@ -8,7 +8,7 @@ subPackage "./c"
 
 dependency ":c" path="."
 
-targetName "stemmerd"
+targetName "stemmer-d"
 targetPath "build"
 
 configuration "library"
