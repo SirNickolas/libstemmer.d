@@ -1,8 +1,8 @@
 import libstemmer.c;
 
-nothrow pure @system @nogc:
+nothrow @system @nogc:
 
-@safe unittest {
+pure @safe unittest {
     const a = sb_stemmer_list();
     assert(a !is null);
     assert(*a !is null);

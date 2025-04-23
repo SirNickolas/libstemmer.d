@@ -1,6 +1,6 @@
 module libstemmer.c;
 
-extern(C) nothrow pure @system @nogc:
+extern(C) nothrow @system @nogc: // Not pure since they may modify `errno`.
 
 struct sb_stemmer; ///
 
@@ -14,7 +14,7 @@ struct sb_stemmer; ///
  *
  *  The list must not be modified in any way.
  */
-immutable(char*)* sb_stemmer_list() @safe;
+immutable(char*)* sb_stemmer_list() pure @safe;
 
 /** Create a new stemmer object, using the specified algorithm, for the
  *  specified character encoding.
@@ -50,7 +50,7 @@ sb_stemmer* sb_stemmer_new(scope const(char)* algorithm, scope const(char)* char
  *  It is safe to pass a null pointer to this function - this will have
  *  no effect.
  */
-void sb_stemmer_delete(sb_stemmer*);
+void sb_stemmer_delete(sb_stemmer*) pure;
 
 /** Stem a word.
  *
@@ -67,4 +67,4 @@ const(ubyte)* sb_stemmer_stem(sb_stemmer*, scope const(ubyte)* word, int size);
 /** Get the length of the result of the last stemmed word.
  *  This should not be called before sb_stemmer_stem() has been called.
  */
-int sb_stemmer_length(sb_stemmer*);
+int sb_stemmer_length(sb_stemmer*) pure;

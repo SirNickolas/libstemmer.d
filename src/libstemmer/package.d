@@ -37,6 +37,15 @@ immutable(string)[ ] _initAlgorithms() nothrow @system @nogc {
     return (algos = _getAlgorithmPtrs()._toStrings());
 }
 
+sb_stemmer* _createStemmer(scope const(char)* algo, scope const(char)* encoding)
+nothrow @system @nogc {
+    import core.stdc.errno: errno;
+
+    const e = errno;
+    scope(exit) errno = e;
+    return sb_stemmer_new(algo, encoding);
+}
+
 ///
 public class SnowballStemmerException: Exception {
     import std.exception: basicExceptionCtors;
@@ -69,7 +78,8 @@ pure:
         assert(encoding is null || !encoding[$ - 1], "`encoding` must be zero-terminated");
     }
     do {
-        _h = sb_stemmer_new(algorithm.ptr, encoding.ptr);
+        alias F = sb_stemmer* function(const(char)*, const(char)*) nothrow pure;
+        _h = (cast(F)&_createStemmer)(algorithm.ptr, encoding.ptr);
         if (_h is null)
             throw new SnowballStemmerException("Unsupported algorithm or encoding");
     }
@@ -107,7 +117,8 @@ in {
 do {
     import core.exception: onOutOfMemoryError;
 
-    const p = sb_stemmer_stem(h, word.ptr, cast(int)word.length);
+    alias F = extern(C) const(ubyte)* function(sb_stemmer*, const(ubyte)*, int) nothrow pure @nogc;
+    const p = (cast(F)&sb_stemmer_stem)(h, word.ptr, cast(int)word.length);
     if (p is null)
         onOutOfMemoryError();
     return p[0 .. sb_stemmer_length(h)];
