@@ -14,13 +14,10 @@ immutable(char*)[ ] _getAlgorithmPtrs() nothrow pure @system @nogc {
 
 immutable(string)[ ] _toStrings(immutable(char*)[ ] a) nothrow @system @nogc {
     import core.exception: onOutOfMemoryError;
-    import core.stdc.errno: errno;
     import core.stdc.stdlib: malloc;
     import core.stdc.string: strlen;
 
-    const e = errno;
     auto result = cast(string*)malloc(a.length * string.sizeof);
-    errno = e;
     if (result is null)
         onOutOfMemoryError();
     foreach (i, p; a)
