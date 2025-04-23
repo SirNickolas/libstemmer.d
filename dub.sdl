@@ -8,12 +8,12 @@ subPackage "./c"
 
 dependency ":c" path="."
 
+targetName "stemmerd"
 targetPath "build"
 
 configuration "library"
 
 configuration "unittest" {
     sourcePaths "test"
-    importPaths "test"
-    dflags "-dip1000" "-preview=in" "-preview=fixImmutableConv"
+    dflags "-dip1000"
 }
