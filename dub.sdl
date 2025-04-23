@@ -17,3 +17,9 @@ configuration "unittest" {
     sourcePaths "test"
     dflags "-dip1000"
 }
+
+configuration "unittest-c" {
+    sourcePaths "test"
+    buildOptions "betterC"
+    dflags "-dip1000"
+}

@@ -37,16 +37,23 @@ immutable(string)[ ] _initAlgorithms() nothrow @system @nogc {
     return (algos = _getAlgorithmPtrs()._toStrings());
 }
 
-sb_stemmer* _createStemmer(scope const(char)* algo, scope const(char)* encoding)
-nothrow @system @nogc {
+sb_stemmer* _createStemmer(scope const(char)[ ] algorithm, scope const(char)[ ] encoding)
+nothrow @system @nogc
+in {
+    assert(!algorithm[$ - 1], "`algorithm` must be zero-terminated");
+    assert(encoding is null || !encoding[$ - 1], "`encoding` must be zero-terminated");
+}
+do {
     import core.stdc.errno: errno;
 
     const e = errno;
     scope(exit) errno = e;
-    return sb_stemmer_new(algo, encoding);
+    return sb_stemmer_new(algorithm.ptr, encoding.ptr);
 }
 
 ///
+version (D_BetterC) { }
+else
 public class SnowballStemmerException: Exception {
     import std.exception: basicExceptionCtors;
 
@@ -72,16 +79,28 @@ pure:
     }
 
     ///
-    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) @trusted
-    in {
-        assert(!algorithm[$ - 1], "`algorithm` must be zero-terminated");
-        assert(encoding is null || !encoding[$ - 1], "`encoding` must be zero-terminated");
+    this(return sb_stemmer* handle) nothrow @system @nogc {
+        _h = handle;
     }
-    do {
-        alias F = sb_stemmer* function(const(char)*, const(char)*) nothrow pure;
-        _h = (cast(F)&_createStemmer)(algorithm.ptr, encoding.ptr);
+
+    ///
+    version (D_BetterC) { }
+    else
+    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) @trusted {
+        alias F = sb_stemmer* function(const(char)[ ], const(char)[ ]) nothrow pure @nogc;
+        _h = (cast(F)&_createStemmer)(algorithm, encoding);
         if (_h is null)
             throw new SnowballStemmerException("Unsupported algorithm or encoding");
+    }
+
+    ///
+    static SnowballStemmer createAssumeOk(
+        scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8,
+    ) nothrow @trusted @nogc {
+        alias F = sb_stemmer* function(const(char)[ ], const(char)[ ]) nothrow pure @nogc;
+        auto h = (cast(F)&_createStemmer)(algorithm, encoding);
+        assert(h !is null, "Unsupported algorithm or encoding");
+        return SnowballStemmer(h);
     }
 
     @disable this(this);
@@ -133,25 +152,27 @@ auto _stem(alias callback, C)(ref scope SnowballStemmer st, scope const(C)[ ] wo
 }
 
 public pragma(inline, true) {
-    ///
-    string stemUtf8(ref scope SnowballStemmer st, scope const(char)[ ] word) nothrow pure {
-        return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
-    }
+    version (D_BetterC) { }
+    else nothrow pure {
+        ///
+        string stemUtf8(ref scope SnowballStemmer st, scope const(char)[ ] word) {
+            return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
+        }
 
-    /// ditto
-    string stemUtf8(scope SnowballStemmer* st, scope const(char)[ ] word) nothrow pure {
-        return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
-    }
+        /// ditto
+        string stemUtf8(scope SnowballStemmer* st, scope const(char)[ ] word) {
+            return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
+        }
 
-    /// ditto
-    immutable(ubyte)[ ] stem(ref scope SnowballStemmer st, scope const(ubyte)[ ] word)
-    nothrow pure {
-        return st._h._exec(word).idup;
-    }
+        /// ditto
+        immutable(ubyte)[ ] stem(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) {
+            return st._h._exec(word).idup;
+        }
 
-    /// ditto
-    immutable(ubyte)[ ] stem(scope SnowballStemmer* st, scope const(ubyte)[ ] word) nothrow pure {
-        return st._h._exec(word).idup;
+        /// ditto
+        immutable(ubyte)[ ] stem(scope SnowballStemmer* st, scope const(ubyte)[ ] word) {
+            return st._h._exec(word).idup;
+        }
     }
 
     ///

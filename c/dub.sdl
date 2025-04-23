@@ -10,6 +10,7 @@ configuration "with-library" {
 configuration "without-library"
 
 configuration "unittest" {
-    sourcePaths "test"
+    sourceFiles "test/test.d"
     libs "stemmer"
+    buildOptions "betterC"
 }
