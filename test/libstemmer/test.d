@@ -21,6 +21,8 @@ pure unittest {
     st.stemUtf8!((s) { assert(s == "cat"); })("cats");
     assert(st.stemUtf8!(s => "dog")("dogs") == "dog");
     static assert(!__traits(compiles, st.stemUtf8!(s => s)("dogs")));
+    static assert(!__traits(compiles, st.stemUtf8!((s) @trusted => s)("dogs")));
+    static assert(!__traits(compiles, st.stemUtf8!((s) @system => 1)("unsafe")));
 
     st.stemUtf8!((s) {
         st = SnowballStemmer.createAssumeOk("ru\0");
