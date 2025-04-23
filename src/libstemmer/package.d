@@ -144,10 +144,10 @@ do {
 }
 
 auto _stem(alias callback, C)(ref scope SnowballStemmer st, scope const(C)[ ] word) {
-    auto tmp = st._h;
-    scope stem = cast(const(C)[ ])tmp._exec(cast(const(ubyte)[ ])word);
+    auto backup = st._h;
+    scope stem = cast(const(C)[ ])backup._exec(cast(const(ubyte)[ ])word);
     st._h = null;
-    scope(exit) st._restore(tmp);
+    scope(exit) st._restore(backup);
     return callback(stem);
 }
 
@@ -160,17 +160,7 @@ public pragma(inline, true) {
         }
 
         /// ditto
-        string stemUtf8(scope SnowballStemmer* st, scope const(char)[ ] word) {
-            return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
-        }
-
-        /// ditto
         immutable(ubyte)[ ] stem(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) {
-            return st._h._exec(word).idup;
-        }
-
-        /// ditto
-        immutable(ubyte)[ ] stem(scope SnowballStemmer* st, scope const(ubyte)[ ] word) {
             return st._h._exec(word).idup;
         }
     }
@@ -181,17 +171,7 @@ public pragma(inline, true) {
     }
 
     /// ditto
-    auto stemUtf8(alias callback)(scope SnowballStemmer* st, scope const(char)[ ] word) {
-        return _stem!callback(*st, word);
-    }
-
-    /// ditto
     auto stem(alias callback)(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) {
         return _stem!callback(st, word);
-    }
-
-    /// ditto
-    auto stem(alias callback)(scope SnowballStemmer* st, scope const(ubyte)[ ] word) {
-        return _stem!callback(*st, word);
     }
 }

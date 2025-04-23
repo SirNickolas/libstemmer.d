@@ -62,7 +62,7 @@ EOF".splitter!(c => !c.isAlpha)
 }
 
 unittest {
-    assert(new SnowballStemmer("en\0").stemUtf8("indirection") == "indirect");
+    assert((*new SnowballStemmer("en\0")).stemUtf8("indirection") == "indirect");
 }
 
 @system unittest {
@@ -77,8 +77,8 @@ unittest {
 
     auto a = new SnowballStemmer("en\0");
     auto b = a;
-    a.stemUtf8!((s) @trusted {
+    (*a).stemUtf8!((s) @trusted {
         assert(s == "alias");
-        assertThrown!AssertError(b.stemUtf8!(_ => 0)("nested"));
+        assertThrown!AssertError((*b).stemUtf8!(_ => 0)("nested"));
     })("aliasing");
 }
