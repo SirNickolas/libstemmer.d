@@ -88,7 +88,7 @@ pure:
     private sb_stemmer* _h;
 
     ///
-    static @property immutable(string)[ ] algorithms() nothrow @trusted @nogc {
+    static immutable(string)[ ] algorithms() nothrow @trusted @nogc {
         return (cast(immutable(string)[ ] function() nothrow pure @nogc)() => _getAlgorithms())();
     }
 
@@ -125,7 +125,7 @@ pure:
     }
 
     ///
-    @property inout(sb_stemmer)* handle() scope inout nothrow @system @nogc {
+    inout(sb_stemmer)* handle() scope inout nothrow @system @nogc {
         auto h = _h;
         return h;
     }
