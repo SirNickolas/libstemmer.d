@@ -40,7 +40,7 @@ unittest {
     import std.algorithm.iteration: filter, map, splitter;
     import std.uni: isAlpha;
 
-    scope st = SnowballStemmer.createAssumeOk("ru\0");
+    scope st = SnowballStemmer("ru\0");
     auto stems = q"EOF
 Варкалось. Хливкие шорьки
 Пырялись по наве,

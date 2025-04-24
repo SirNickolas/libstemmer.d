@@ -4,6 +4,11 @@ import libstemmer.c;
 
 private @safe:
 
+static if (__VERSION__ >= 2_100)
+    import core.attribute: mustuse;
+else
+    enum mustuse;
+
 immutable(char*)[ ] _getAlgorithmPtrs() nothrow pure @system @nogc {
     auto result = sb_stemmer_list();
     size_t n;
@@ -34,18 +39,30 @@ immutable(string)[ ] _initAlgorithms() nothrow @system @nogc {
     return (algos = _getAlgorithmPtrs()._toStrings());
 }
 
+sb_stemmer* _createStemmer(scope const(char)* algorithm, scope const(char)* encoding)
+nothrow @system @nogc {
+    import core.stdc.errno: errno;
+
+    const e = errno;
+    scope(exit) errno = e;
+    return sb_stemmer_new(algorithm, encoding);
+}
+
 sb_stemmer* _createStemmer(scope const(char)[ ] algorithm, scope const(char)[ ] encoding)
-nothrow @system @nogc
+nothrow pure @trusted @nogc
 in {
     assert(!algorithm[$ - 1], "`algorithm` must be zero-terminated");
     assert(encoding is null || !encoding[$ - 1], "`encoding` must be zero-terminated");
 }
 do {
-    import core.stdc.errno: errno;
+    alias F = sb_stemmer* function(scope const(char)*, scope const(char)*) nothrow pure @nogc;
+    return (cast(F)&_createStemmer)(algorithm.ptr, encoding.ptr);
+}
 
-    const e = errno;
-    scope(exit) errno = e;
-    return sb_stemmer_new(algorithm.ptr, encoding.ptr);
+@mustuse struct _Bool {
+    bool ok;
+
+    alias ok this;
 }
 
 ///
@@ -76,34 +93,35 @@ pure:
     }
 
     ///
-    this(return sb_stemmer* handle) nothrow @system @nogc {
-        _h = handle;
-    }
-
-    ///
     version (D_BetterC) { }
     else
-    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) @trusted {
-        alias F = sb_stemmer* function(const(char)[ ], const(char)[ ]) nothrow pure @nogc;
-        _h = (cast(F)&_createStemmer)(algorithm, encoding);
-        if (_h is null)
+    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) {
+        if (auto h = _createStemmer(algorithm, encoding))
+            _h = h;
+        else
             throw new SnowballStemmerException("Unsupported algorithm or encoding");
     }
 
     ///
-    static SnowballStemmer createAssumeOk(
-        scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8,
-    ) nothrow @trusted @nogc {
-        alias F = sb_stemmer* function(const(char)[ ], const(char)[ ]) nothrow pure @nogc;
-        auto h = (cast(F)&_createStemmer)(algorithm, encoding);
-        assert(h !is null, "Unsupported algorithm or encoding");
-        return SnowballStemmer(h);
+    this(return sb_stemmer* handle) nothrow @system @nogc {
+        _h = handle;
     }
 
     @disable this(this);
 
     ~this() scope nothrow @trusted @nogc {
         sb_stemmer_delete(_h);
+    }
+
+    ///
+    _Bool reset(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8)
+    scope nothrow @trusted @nogc {
+        if (auto h = _createStemmer(algorithm, encoding)) {
+            sb_stemmer_delete(_h);
+            _h = h;
+            return _Bool(true);
+        }
+        return _Bool.init;
     }
 
     ///
