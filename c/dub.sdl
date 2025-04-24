@@ -12,5 +12,5 @@ configuration "without-library"
 configuration "unittest" {
     sourceFiles "test/test.d"
     libs "stemmer"
-    buildOptions "betterC"
+    dflags "-betterC"
 }

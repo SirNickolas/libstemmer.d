@@ -6,7 +6,7 @@ license     "BSD-3-Clause"
 
 subPackage "./c"
 
-dependency ":c" path="."
+dependency ":c" path="c"
 
 targetName "stemmer-d"
 targetPath "build"
@@ -20,6 +20,5 @@ configuration "unittest" {
 
 configuration "unittest-c" {
     sourcePaths "test"
-    buildOptions "betterC"
-    dflags "-dip1000"
+    dflags "-dip1000" "-betterC"
 }
