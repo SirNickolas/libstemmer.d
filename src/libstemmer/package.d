@@ -95,7 +95,7 @@ pure:
     ///
     version (D_BetterC) { }
     else
-    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) {
+    this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) scope {
         if (auto h = _createStemmer(algorithm, encoding))
             _h = h;
         else
@@ -103,7 +103,7 @@ pure:
     }
 
     ///
-    this(return sb_stemmer* handle) nothrow @system @nogc {
+    this(sb_stemmer* handle) scope nothrow @system @nogc {
         _h = handle;
     }
 
@@ -125,19 +125,21 @@ pure:
     }
 
     ///
-    @property inout(sb_stemmer)* handle() return scope inout nothrow @system @nogc {
-        return _h;
+    @property inout(sb_stemmer)* handle() scope inout nothrow @system @nogc {
+        auto h = _h;
+        return h;
     }
 
     ///
-    sb_stemmer* release() return scope nothrow @nogc {
+    sb_stemmer* release() scope nothrow @trusted @nogc {
         scope(exit) _h = null;
-        return _h;
+        auto h = _h;
+        return h;
     }
 
     private void _restore(scope sb_stemmer* backup) scope nothrow @trusted @nogc {
         if (_h is null)
-            _h = backup; // `scope sb_stemmer*` is a lie; it is `return sb_stemmer*` in fact.
+            _h = backup; // `scope sb_stemmer*` is a lie.
         else
             sb_stemmer_delete(backup);
     }
