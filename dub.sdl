@@ -2,7 +2,7 @@ name        "libstemmer-d"
 description "Bindings to libstemmer — Snowball stemming algorithms."
 authors     "Nickolay Bukreyev"
 copyright   "Copyright © 2025, Nickolay Bukreyev"
-license     "BSD-3-Clause"
+license     "BSL-1.0"
 
 subPackage "./c"
 
