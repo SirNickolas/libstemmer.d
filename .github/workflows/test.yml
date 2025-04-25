@@ -1,0 +1,66 @@
+%YAML 1.1
+---
+name: Run tests
+on:
+  push:
+    paths:
+    - .github/workflows/test.yml
+    - dub.sdl
+    - '**.d'
+    - '**.di'
+  pull_request:
+    paths:
+    - .github/workflows/test.yml
+    - dub.sdl
+    - '**.d'
+    - '**.di'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  d-latest:
+    name: Test with dmd-latest
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up D toolchain
+      uses: dlang-community/setup-dlang@v2
+
+    - name: Check out the project
+      uses: actions/checkout@v4
+
+    - name: Install libstemmer-dev
+      run: sudo apt-get install libstemmer-dev
+
+    - name: Run tests (libstemmer-d:c)
+      working-directory: c
+      run: dub test
+
+    - name: Run tests
+      run: dub test
+
+    - name: Run tests (-betterC)
+      run: dub test -cunittest-c
+
+  d-legacy:
+    name: Build with dmd-2.075.1
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up D toolchain
+      uses: dlang-community/setup-dlang@v2
+      with:
+        compiler: dmd-2.075.1
+
+    - name: Check out the project
+      uses: actions/checkout@v4
+
+    - name: Build a static library
+      run: dub build

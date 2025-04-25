@@ -1,0 +1,58 @@
+%YAML 1.1
+---
+name: Generate documentation
+on:
+  push:
+    branches: [main]
+    paths:
+    - .github/workflows/docs.yml
+    - dub.sdl
+    - '**.d'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: docs
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  d:
+    name: Generate D docs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up D toolchain
+      uses: dlang-community/setup-dlang@v2
+
+    - name: Check out the project
+      uses: actions/checkout@v4
+
+    - name: Generate docs
+      run: dub -bdocs
+
+    - name: Set up Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload API docs
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs/
+
+  deploy-pages:
+    name: Deploy Pages
+    needs: d
+    permissions:
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
