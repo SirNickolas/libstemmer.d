@@ -154,6 +154,9 @@ pure:
         return _Bool.init;
     }
 
+    ///
+    bool isNull() scope const nothrow @nogc { return _h is null; }
+
     /++
         Acquire ownership over a low-level stemmer.
 

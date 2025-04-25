@@ -26,7 +26,10 @@ pure unittest {
 
 pure unittest {
     SnowballStemmer st;
+    assert(st.isNull);
     assert(st.reset("en\0"));
+    assert(!st.isNull);
+
     st.stemUtf8!((s) { assert(s == "cat"); })("cats");
     assert(st.stemUtf8!(s => "dog")("dogs") == "dog");
     static assert(!__traits(compiles, st.stemUtf8!(s => s)("escapes")));
