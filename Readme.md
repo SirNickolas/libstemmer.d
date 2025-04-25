@@ -24,7 +24,7 @@ assert(s == "Варка Хливк шорьк Пыря по нав И хрюко
     " О бо Бармаглот сын Он так свирлеп и дик А в глyще рым исполин Злопастн Брандашмыг");
 ```
 
-This is D bindings to `libstemmer`, a C library of [Snowball] stemming algorithms.
+This is D bindings to `libstemmer`, a C library of [Snowball][] stemming algorithms.
 
 > Snowball provides access to efficient algorithms for calculating a
 > “stemmed” form of a word.  This is a form with most of the common
@@ -72,9 +72,9 @@ provides stop-word lists for [some of the languages](https://snowballstem.org/al
 
 ## See Also
 
-* [gedaiu/stemmer]—D implementation of the classic Porter algorithm; English only.
-* [PyMorphy2]—A morphological analyzer in Python (and partially C); Russian and Ukrainian only.
-* [Yandex MyStem]—Rocket science; Russian only; free but not open source.
+* [gedaiu/stemmer][]—D implementation of the classic Porter algorithm; English only.
+* [PyMorphy2][]—A morphological analyzer in Python (and partially C); Russian and Ukrainian only.
+* [Yandex MyStem][]—Rocket science; Russian only; free but not open source.
 
 [gedaiu/stemmer]: https://github.com/gedaiu/stemmer
 [PyMorphy2]: https://github.com/pymorphy2/pymorphy2
