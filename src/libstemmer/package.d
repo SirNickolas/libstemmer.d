@@ -74,7 +74,12 @@ public class SnowballStemmerException: Exception {
     mixin basicExceptionCtors; ///
 }
 
-///
+/++
+    Encapsulates a stemmer, providing safe interface to it.
+
+    This struct is non-copyable. If this makes you unhappy, allocate it with `new`
+    or `safeRefCounted`.
++/
 public struct SnowballStemmer {
 pure:
     ///
@@ -87,12 +92,29 @@ pure:
 
     private sb_stemmer* _h;
 
-    ///
+    /++
+        Get a list of supported stemming _algorithms (i.e., languages).
+
+        Only the canonical name of each algorithm is returned: `"english\0"` is there, but `"en\0"`
+        is not. See [modules.txt] to get an impression of what this list may look like.
+
+        [modules.txt]: https://github.com/snowballstem/snowball/blob/master/libstemmer/modules.txt
+    +/
     static immutable(string)[ ] algorithms() nothrow @trusted @nogc {
         return (cast(immutable(string)[ ] function() nothrow pure @nogc)() => _getAlgorithms())();
     }
 
-    ///
+    /++
+        Construct a stemmer with the specified _algorithm and input _encoding.
+
+        `algorithm` and `encoding` are case-sensitive and must be zero-terminated (e.g., you have
+        to pass `"en\0"`, not `"en"`); that is asserted.
+
+        This constructor is unavailable in *betterC* mode.
+
+        Throws: `SnowballStemmerException` on an unknown _algorithm or _encoding or an unsupported
+        combination of those.
+    +/
     version (D_BetterC) { }
     else
     this(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8) scope {
@@ -102,18 +124,22 @@ pure:
             throw new SnowballStemmerException("Unsupported algorithm or encoding");
     }
 
-    ///
-    this(sb_stemmer* handle) scope nothrow @system @nogc {
-        _h = handle;
-    }
-
     @disable this(this);
 
     ~this() scope nothrow @trusted @nogc {
         sb_stemmer_delete(_h);
     }
 
-    ///
+    /++
+        Try to change the _algorithm and _encoding used by this stemmer.
+
+        `algorithm` and `encoding` are case-sensitive and must be zero-terminated (e.g., you have
+        to pass `"en\0"`, not `"en"`); that is asserted.
+
+        The return type of this method implicitly converts to `bool`. If `algorithm` or `encoding`
+        are unknown or their combination is unsupported, then `false` is returned and no changes
+        are made.
+    +/
     _Bool reset(scope const(char)[ ] algorithm, scope Encoding encoding = Encoding.utf8)
     scope nothrow @trusted @nogc {
         if (auto h = _createStemmer(algorithm, encoding)) {
@@ -124,16 +150,33 @@ pure:
         return _Bool.init;
     }
 
-    ///
+    /++
+        Acquire ownership over a low-level stemmer.
+
+        It will be deleted automatically, hence `@system`.
+    +/
+    this(sb_stemmer* handle) scope nothrow @system @nogc {
+        _h = handle;
+    }
+
+    /++
+        Get the low-level stemmer.
+
+        Manipulating it directly may interfere with `SnowballStemmer`, hence `@system`.
+    +/
     inout(sb_stemmer)* handle() scope inout nothrow @system @nogc {
         auto h = _h;
         return h;
     }
 
-    ///
+    /++
+        Extract the low-level stemmer.
+
+        From now on, you are responsible for deleting it.
+    +/
     sb_stemmer* release() scope nothrow @trusted @nogc {
-        scope(exit) _h = null;
         auto h = _h;
+        _h = null;
         return h;
     }
 
@@ -160,35 +203,79 @@ do {
     return p[0 .. sb_stemmer_length(h)];
 }
 
-auto _stem(alias callback, C)(ref scope SnowballStemmer st, scope const(C)[ ] word) {
-    auto backup = st._h;
-    scope stem = cast(const(C)[ ])backup._exec(cast(const(ubyte)[ ])word);
-    st._h = null;
-    scope(exit) st._restore(backup);
-    return callback(stem);
-}
+public
+version (D_Ddoc) {
+    /++
+        Determine the _stem of the given _word.
 
-public pragma(inline, true) {
-    version (D_BetterC) { }
-    else nothrow pure {
-        ///
-        string stemUtf8(ref scope SnowballStemmer st, scope const(char)[ ] word) {
-            return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
-        }
+        The _stem is passed to `callback`, which it must not escape. (If you compile with
+        `-dip1000`, the compiler will enforce that.) Also, `callback` has to be `@safe`
+        or `@trusted`. Whatever it returns will be passed back to the caller.
 
-        /// ditto
-        immutable(ubyte)[ ] stem(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) {
-            return st._h._exec(word).idup;
-        }
-    }
+        During `callback` invocation, you cannot _stem another _word with the same stemmer. (Doing
+        so will result in assertion failure.)
 
-    ///
-    auto stemUtf8(alias callback)(ref scope SnowballStemmer st, scope const(char)[ ] word) {
-        return _stem!callback(st, word);
+        `stemUtf8` does not actually require the stemmer to be created with `Encoding.utf8`; it is
+        merely a convenience function that inserts `char[ ] <-> ubyte[ ]` casts. It can be used
+        interchangeably with `stem`; but there is a convention in the D community that `char[ ]`
+        contains UTF-8 and `ubyte[ ]` holds arbitrary binary data.
+
+        Note these are not member functions (to avoid deprecations about dual context). Thanks
+        to UFCS, most of the time there is no difference.
+    +/
+    auto stemUtf8(alias callback)(ref scope SnowballStemmer st, scope const(char)[ ] word) @safe {
+        return callback(word);
     }
 
     /// ditto
-    auto stem(alias callback)(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) {
-        return _stem!callback(st, word);
+    auto stem(alias callback)(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) @safe {
+        return callback(word);
+    }
+
+    ///
+    pure unittest {
+        auto st = SnowballStemmer("en\0");
+        st.stemUtf8!((stem) {
+            assert(stem == "minifi");
+        })("minify");
+    }
+} else {
+    private auto _stem(C, alias callback)(ref scope SnowballStemmer st, scope const(C)[ ] word) {
+        auto backup = st._h;
+        scope stem = cast(const(C)[ ])backup._exec(cast(const(ubyte)[ ])word);
+        // We temporarily steal `_h` so that `callback` cannot destroy it and invalidate `stem`.
+        st._h = null;
+        scope(exit) st._restore(backup);
+        return callback(stem);
+    }
+
+    alias stemUtf8(alias callback) = _stem!(char, callback);
+    alias stem(alias callback) = _stem!(ubyte, callback);
+}
+
+version (D_BetterC) { }
+else {
+public pure:
+    /++
+        Determine the _stem of the given _word; allocate from the GC heap.
+
+        Only provided for convenience. When possible, you are advised to use the [other overload](#stemUtf8), which does not allocate; please refer to it for detailed
+        documentation.
+    +/
+    pragma(inline, true)
+    string stemUtf8(ref scope SnowballStemmer st, scope const(char)[ ] word) nothrow {
+        return cast(string)st._h._exec(cast(const(ubyte)[ ])word).idup;
+    }
+
+    /// ditto
+    pragma(inline, true)
+    immutable(ubyte)[ ] stem(ref scope SnowballStemmer st, scope const(ubyte)[ ] word) nothrow {
+        return st._h._exec(word).idup;
+    }
+
+    ///
+    unittest {
+        auto st = SnowballStemmer("en\0");
+        assert(st.stemUtf8("minify") == "minifi");
     }
 }
