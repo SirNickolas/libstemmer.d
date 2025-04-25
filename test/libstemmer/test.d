@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file License_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+module libstemmer.test;
+
 import libstemmer;
 static import libstemmer.test_with_druntime;
 
@@ -27,8 +29,8 @@ pure unittest {
     assert(st.reset("en\0"));
     st.stemUtf8!((s) { assert(s == "cat"); })("cats");
     assert(st.stemUtf8!(s => "dog")("dogs") == "dog");
-    static assert(!__traits(compiles, st.stemUtf8!(s => s)("dogs")));
-    static assert(!__traits(compiles, st.stemUtf8!((s) @trusted => s)("dogs")));
+    static assert(!__traits(compiles, st.stemUtf8!(s => s)("escapes")));
+    static assert(!__traits(compiles, st.stemUtf8!((s) @trusted => s)("escapes")));
     static assert(!__traits(compiles, st.stemUtf8!((s) @system => 1)("unsafe")));
 
     st.stemUtf8!((s) {
@@ -49,4 +51,26 @@ unittest {
         static int n;
         n++;
     })("impurity");
+}
+
+pure unittest {
+    import std.typecons: borrow, safeRefCounted;
+
+    auto a = safeRefCounted(SnowballStemmer.init);
+    auto b = a;
+    assert(a.borrow!((ref st) => st.reset("en\0")));
+    b.borrow!((ref st) {
+        st.stemUtf8!((s) { assert(s == "alias"); })("aliased");
+    });
+}
+
+pure @system unittest {
+    import std.typecons: refCounted;
+
+    auto a = refCounted(SnowballStemmer.init);
+    auto b = a;
+    () @safe {
+        assert(a.reset("en\0"));
+        b.stemUtf8!((s) { assert(s == "alias"); })("aliased");
+    }();
 }
