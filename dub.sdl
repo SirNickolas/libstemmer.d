@@ -1,5 +1,5 @@
 name        "libstemmer-d"
-description "Bindings to libstemmer — Snowball stemming algorithms."
+description "Bindings to libstemmer—Snowball stemming algorithms."
 authors     "Nickolay Bukreyev"
 copyright   "Copyright © 2025, Nickolay Bukreyev"
 license     "BSL-1.0"
@@ -21,4 +21,10 @@ configuration "unittest" {
 configuration "unittest-c" {
     sourcePaths "test"
     dflags "-dip1000" "-betterC"
+}
+
+buildType "docs" {
+    sourceFiles "theme.ddoc"
+    buildOptions "syntaxOnly"
+    dflags "-Dddocs"
 }

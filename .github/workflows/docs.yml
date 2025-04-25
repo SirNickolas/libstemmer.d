@@ -8,6 +8,7 @@ on:
     - .github/workflows/docs.yml
     - dub.sdl
     - '**.d'
+    - '**.ddoc'
   workflow_dispatch:
 permissions:
   contents: read

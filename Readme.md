@@ -63,10 +63,11 @@ subConfiguration "libstemmer-d:c" "without-library"
 
 ## Usage
 
-API docs are not hosted anywhere at the moment. You can build them locally with `dub -bdocs`.
-Or simply read comments in the [source][package.d].
+[API docs](https://sirnickolas.github.io/libstemmer.d/package)
 
-[package.d]: https://github.com/SirNickolas/libstemmer.d/blob/main/src/libstemmer/package.d
+In addition to stemming, you may want to filter out stop words. `libstemmer` deals nothing
+to them, as the synopsis shows, so their handling is up to you. Snowball project, for example,
+provides stop-word lists for [some of the languages](https://snowballstem.org/algorithms/).
 
 
 ## See Also

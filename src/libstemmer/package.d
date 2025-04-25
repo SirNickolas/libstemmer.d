@@ -266,7 +266,8 @@ public pure:
     /++
         Determine the _stem of the given _word; allocate from the GC heap.
 
-        Only provided for convenience. When possible, you are advised to use the [other overload](#stemUtf8), which does not allocate; please refer to it for detailed
+        Only provided for convenience. When possible, you are encouraged to use the [other
+        overload](#stemUtf8), which does not allocate; please refer to it for detailed
         documentation.
     +/
     pragma(inline, true)

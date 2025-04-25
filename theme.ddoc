@@ -1,0 +1,37 @@
+This file is super hacky, but until I make a DDoc theme I’m satisfied with, it will suffice.
+
+DDOC_MODULE_MEMBERS = <style>
+.ddoc .para {
+  font-size: 11pt;
+  color: #383838;
+}
+
+.ddoc .inline-code {
+  padding: 1px;
+  border: 1px solid #D1D1D1;
+  border-radius: 3px;
+  color: #484848;
+}
+</style>
+<section class="section ddoc_module_members_section">
+<div class="ddoc_module_members">
+$(DDOC_MEMBERS $0)
+</div>
+</section>
+
+DDOC_DECL = <div class="ddoc_decl">
+<section class="section">
+<div class="declaration">
+<div class="dlang"><p class="para"><code class="code">$0</code></p></div>
+</div>
+</section>
+</div>
+
+DDOC_DESCRIPTION = <div class="ddoc_description">
+<p class="para">$0</p>
+</div>
+
+D_INLINECODE = <code class="code inline-code">$0</code>
+
+DDOC_PARAM = $0
+DDOC_PSYMBOL = $0
