@@ -49,15 +49,12 @@ Since `libstemmer-d` only provides bindings, you also need to install the origin
 library. For example, on Ubuntu:
 
 ```sh
-# For dynamic linking (default):
-sudo apt install libstemmer0d
-# For static linking:
 sudo apt install libstemmer-dev
 ```
 
-By default, this package will attempt to link to the C `libstemmer` library installed in a standard
-place on your system (and hopefully work out of the box). If that is undesirable, add this line
-to your `dub.sdl`, then pass arguments for the linker as needed:
+By default, this package will attempt to dynamically link to the C `libstemmer` library installed
+in a standard place on your system (and hopefully work out of the box). If that is undesirable, add
+the following line to your `dub.sdl`, then pass arguments for the linker as needed:
 
 ```c
 subConfiguration "libstemmer-d:c" "without-library"
