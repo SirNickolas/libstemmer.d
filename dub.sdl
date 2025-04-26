@@ -4,22 +4,24 @@ authors     "Nickolay Bukreyev"
 copyright   "Copyright © 2025, Nickolay Bukreyev"
 license     "BSL-1.0"
 
-subPackage "./c"
-
-dependency ":c" path="c"
-
 targetName "stemmer-d"
 targetPath "build"
 
-configuration "library"
+configuration "with-library" {
+    libs "stemmer"
+}
+
+configuration "without-library"
 
 configuration "unittest" {
     sourcePaths "test"
+    libs "stemmer"
     dflags "-dip1000"
 }
 
 configuration "unittest-c" {
     sourcePaths "test"
+    libs "stemmer"
     dflags "-dip1000" "-betterC"
 }
 

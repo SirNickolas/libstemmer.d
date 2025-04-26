@@ -57,7 +57,7 @@ in a standard place on your system (and hopefully work out of the box). If that 
 the following line to your `dub.sdl`, then pass arguments for the linker as needed:
 
 ```c
-subConfiguration "libstemmer-d:c" "without-library"
+subConfiguration "libstemmer-d" "without-library"
 ```
 
 

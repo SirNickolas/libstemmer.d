@@ -39,10 +39,6 @@ jobs:
     - name: Install libstemmer-dev
       run: sudo apt-get install libstemmer-dev
 
-    - name: Run tests (libstemmer-d:c)
-      working-directory: c
-      run: dub test
-
     - name: Run tests
       run: dub test
 

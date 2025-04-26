@@ -5,7 +5,6 @@
 module libstemmer.test;
 
 import libstemmer;
-static import libstemmer.test_with_druntime;
 
 nothrow @safe @nogc:
 
